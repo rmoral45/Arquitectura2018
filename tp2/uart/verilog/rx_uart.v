@@ -9,7 +9,7 @@ module rx_uart
   input  i_reset,
   input  i_tick,
   input  i_rx,
-  output o_data_ready,
+  output reg o_data_ready,
   output [DATA_BITS-1 : 0]o_data
  );
 localparam NSTATE = 4;
@@ -30,15 +30,12 @@ reg [NSTATE-1 : 0] state;
 reg [NSTATE-1 : 0] state_next;
 reg [$clog2(NTICK) : 0] tick_reg;
 reg [$clog2(NTICK) : 0] tick_next;
-reg  data_ready;
-reg  data_ready_next;
 reg [DATA_BITS-1 : 0] data_reg;
 reg [DATA_BITS-1 : 0] data;
 reg [$clog2(DATA_BITS) : 0] data_counter;
 reg [$clog2(DATA_BITS) : 0] data_counter_next;
 
 
-assign o_data_ready = data_ready;
 assign o_data = data_reg;
 
 always @ (posedge i_clock or posedge i_reset) begin
@@ -47,14 +44,12 @@ always @ (posedge i_clock or posedge i_reset) begin
         data_reg <= 0;
         data_counter <= 0;
         tick_reg <= 0;
-        data_ready <= 0;
     end
     else begin
         state <= state_next;
         tick_reg <= tick_next;
         data_counter <= data_counter_next;
         data_reg <= data;
-        data_ready <= data_ready_next;
     end
 end
 
@@ -64,14 +59,15 @@ always @ * begin
     
     tick_next  = tick_reg;
     state_next = state;
-    data_ready_next = 0;
     data_counter_next = data_counter;
     data = data_reg;
+    o_data_ready = 0;
     case(state)
         
         IDLE:begin
-            if(i_rx == 0)begin
+            if(~i_rx )begin
                 state_next = START;
+                tick_next = 0;
             end
         end    
         START: begin
@@ -80,6 +76,7 @@ always @ * begin
                 if(tick_reg == 7)begin
                     state_next = DATA;
                     tick_next = 0;
+                    data_counter_next = 0;
                 end
                 else
                     tick_next = tick_reg + 1;
@@ -107,10 +104,9 @@ always @ * begin
            end
        end    
        STOP : begin
-           data_ready_next = 1;
            if(i_tick)begin
                if(tick_reg == STOP_TICKS - 1)begin
-                   tick_next = 0;
+                   o_data_ready = 1'b1;
                    state_next = IDLE;
                end
                else begin
@@ -118,13 +114,7 @@ always @ * begin
                end
            end
        end    
-        default: begin
-            tick_next  = tick_reg;
-            state_next = state;
-            data_ready_next = 0;
-            data_counter_next = data_counter;
-            data = data_reg;
-        end
+        
     endcase
 
 end
