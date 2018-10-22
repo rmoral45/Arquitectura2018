@@ -36,10 +36,10 @@ tick_reg <=tick;
             rx <= 1;//bit 0 ope1
         end
         32'd64:begin
-            rx <= 1;
+            rx <= 0;
         end
         32'd80:begin
-            rx <= 0;
+            rx <= 1;
         end
         32'd96:begin
             rx <= 0;
@@ -64,10 +64,10 @@ tick_reg <=tick;
             rx <= 0;//start bit
         end
         32'd208:begin
-            rx <= 1; //bit 0 ope2
+            rx <= 0; //bit 0 ope2
         end
         32'd224:begin
-            rx <= 1;
+            rx <= 0;
         end
         32'd240:begin
             rx <= 0;
@@ -76,13 +76,13 @@ tick_reg <=tick;
             rx <= 0;
         end
         32'd272:begin
-            rx <= 0;
+            rx <= 1;
         end
         32'd288:begin
             rx <= 0;
         end
         32'd304:begin
-            rx <= 0;
+            rx <= 1;
         end
         32'd320:begin
             rx <= 0;
@@ -94,13 +94,13 @@ tick_reg <=tick;
             rx <= 0;//start bit
         end
         32'd368:begin
-            rx <= 0; //bit 0 opcode
+            rx <= 1; //bit 0 opcode
         end
         32'd384:begin
             rx <= 0;
         end
         32'd400:begin
-            rx <= 0;
+            rx <= 1;
         end
         32'd416:begin
             rx <= 0;
@@ -112,7 +112,7 @@ tick_reg <=tick;
             rx <= 1;
         end
         32'd464:begin
-            rx <= 0;
+            rx <= 1;
         end
         32'd480:begin
             rx <= 0;
@@ -137,7 +137,7 @@ top_level_uart#()
                 .reset(reset),
                 .i_rx(rx),
                 .o_tx(tx),
-                //.o_pin_tx(tx),
+                .o_pin_tx(tx),
                 .o_tick(tick)
             );
 
