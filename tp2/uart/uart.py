@@ -36,12 +36,12 @@ def main():
 	while True:
 		
 		ope1 = raw_input("Ingrese el primer operando, recuerde que el tamanio de palabra es de 8 bits: ")
-		ope1 = int(ope1,2)
+		ope1 = int(ope1)
 		sent = ser.write(chr(ope1))  # envio op1, op2, opcode
 
 
 		ope2 = raw_input("Ahora, ingrese el segundo operando, recuerde que el tamanio de palabra es de 8 bits: ")
-		ope2 = int(ope2,2)
+		ope2 = int(ope1)
 		sent = ser.write(chr(ope2))
 
 
