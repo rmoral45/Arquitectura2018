@@ -5,7 +5,8 @@ module top_level_uart#(
                         input  clock,
                         input  reset,
                         input  i_rx,
-                        output o_tx
+                        output o_tx,
+                        output [11:0] led
                        );
 
 
@@ -15,36 +16,20 @@ wire rx_data_ready;
 wire [DATA_BITS-1 : 0] recived_data;
 wire [DATA_BITS-1 : 0] operando1;
 wire [DATA_BITS-1 : 0] operando2;
+wire [DATA_BITS-1 : 0] data_to_send;
 wire [5 : 0] opcode;
 wire tick;
 wire tx_data_ready;
 wire [DATA_BITS-1 : 0] alu_out;//esto lo conecto a la salida de la alu
 wire available_tx;
 wire [DATA_BITS-1 : 0] resultado;
-
-//registros para sincronizar envio
-reg operation_ready_reg;
-reg enable_tx;
-
-//assign o_tick = tick;
+wire start_tx;
+wire  [11:0]led_wire;
+wire in_rx;
+assign in_rx = i_rx;
 assign o_tx = transmitted_data;
-//assign o_pin_tx = transmitted_data;
-assign tx_data_ready = enable_tx;
 
-
-
-always @ (posedge clock)begin
-    operation_ready_reg <= operation_ready;
-    if(operation_ready_reg == 0 && operation_ready == 1 && available_tx)
-        enable_tx <= 1;
-    else
-        enable_tx <= 0;
-end
-
-
-
-
-
+assign led = led_wire;
 
 
 
@@ -53,8 +38,8 @@ tx_uart#()
             .i_clock(clock),
             .i_reset(reset),
             .i_tick(tick),
-            .i_data(resultado),
-            .i_data_ready(tx_data_ready),
+            .i_data(data_to_send),
+            .i_start(start_tx),
             .o_data(transmitted_data), //asigno  puerto de salida
             .o_available_tx(available_tx)
           );
@@ -64,21 +49,25 @@ rx_uart#()
             .i_clock(clock),
             .i_reset(reset),
             .i_tick(tick),
-            .i_rx(i_rx), //asigno puerto de entrada
+            .i_rx(in_rx), //asigno puerto de entrada
             .o_data(recived_data),
             .o_data_ready(rx_data_ready)
           );
 
 rx_interface#() // agregar una salida que se ponga en 1 cuando esten los 3 operandos
     interface(
-                .i_clk(clock),
-                .i_rst(reset),
+                .i_clock(clock),
+                .i_reset(reset),
                 .i_data_ready(rx_data_ready),
                 .i_data(recived_data),
+                .i_alu_result(resultado),
+                
                 .o_operando1(operando1),
                 .o_operando2(operando2),
                 .o_opcode(opcode),
-                .o_operation_ready(operation_ready)
+                .o_start_tx(start_tx),
+                .o_data(data_to_send),
+                .o_led(led_wire)
              );
 
 tick_gen#()

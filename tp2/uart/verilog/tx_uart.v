@@ -22,6 +22,7 @@ localparam [3:0] START = 4'b0010;
 localparam [3:0] SEND_DATA = 4'b0100;
 localparam [3:0] STOP = 4'b1000;
 
+localparam STOP_TICKS = STOP_BITS * N_TICK;
 
 reg [DATA_BITS-1 : 0] data_reg;
 reg [DATA_BITS-1 : 0] data_reg_next;
@@ -31,7 +32,7 @@ reg [LEN_DATA_COUNTER-1 : 0] data_counter;
 reg [LEN_DATA_COUNTER-1 : 0] data_counter_next;
 reg [3 : 0] state_reg;
 reg [3 : 0] state_next;
-reg tx_reg,tx_next,
+reg tx_reg,tx_next;
 
 assign o_data = tx_reg;
 
@@ -41,9 +42,10 @@ always @(posedge i_clock or posedge i_reset)begin
     if(i_reset)
     begin
         tick_reg <= 0;
-        send_ctr <= 0;
+        data_counter <= 0;
         state_reg <= IDLE;
         data_reg <= 0;
+        tx_reg <= 1'b1;
         
     end
     else
@@ -109,7 +111,7 @@ always @ * begin
                 if(tick_reg == (N_TICK - 1))
                 begin
                     
-                    data_reg_next = data >> 1;
+                    data_reg_next = data_reg >> 1;
                     tick_next = 0;
 
                     if(data_counter == (DATA_BITS - 1)) 
@@ -136,7 +138,7 @@ always @ * begin
                  if(tick_reg == STOP_TICKS - 1) 
                  begin
                    state_next = IDLE;
-                   o_tx_available = 1'b1;
+                   o_available_tx = 1'b1;
                  end
                  else
                  begin   
